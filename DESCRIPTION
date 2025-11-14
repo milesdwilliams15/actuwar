@@ -1,6 +1,6 @@
-Package: invburreg
+Package: actuwar
 Title: Fit and Visualize Inverse Burr Models
-Version: 0.0.0.9000
+Version: 1.0.0
 Authors@R: 
     person("Miles", "Williams", , "https://milesdwilliams15.github.io/", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-0192-5542"))

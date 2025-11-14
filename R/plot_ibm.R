@@ -131,7 +131,7 @@ plot_ibm <- function(
     }
   }
   
-  ## Plot cdf the distribution
+  ## Plot cdf of the distribution
   ll_plot(
     theMu,
     theAlpha,

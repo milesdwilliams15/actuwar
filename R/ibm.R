@@ -21,7 +21,7 @@ ibm <- function(
   
   ## The Data
   if(!is.null(data)) {
-    y <- data |> dplyr::pull(!!enquo(outcome))
+    y <- data |> dplyr::pull(!!dplyr::enquo(outcome))
   } else {
     y <- outcome
   }
