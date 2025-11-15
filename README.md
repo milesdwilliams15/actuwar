@@ -1,4 +1,4 @@
-# {actuwar} <img src="inst/logo.png" align="right" height="130"/>
+# {actuwar} <img src="inst/logo.png" align="right" width="200"/>
 
 ![R-version](https://img.shields.io/badge/R%20%3E%3D-4.2.1-brightgreen) ![updated](https://img.shields.io/badge/last%20update-11--15--2025-brightgreen) ![version](https://img.shields.io/badge/version-1.0.0-brightgreen) ![license](https://img.shields.io/badge/license-MIT-red) ![encoding](https://img.shields.io/badge/encoding-UTF--8-red) [![orchid](https://img.shields.io/badge/ORCID-0000--0003--0192--5542-brightgreen)](https://orcid.org/0000-0003-0192-5542)
 
@@ -90,7 +90,9 @@ The function `llplot()` is an opinionated wrapper for `ggplot()` that produces a
 llplot(wars, fat)
 ```
 
-![`llplot()` can do a few extra things that users may be interested in. For example, it can plot the data by groups. The below code shows the Pr(X \> x) for battle deaths before and after 1950.](images/clipboard-782194201.png)
+![](images/clipboard-782194201.png)
+
+`llplot()` can do more than just visualize the empirical Pr(X \> x) for a single variable. You can also specify that you want to show values by different groups in the data. The below code shows the distribution of war deaths by whether the war started before or after 1950:
 
 ```         
 llplot(wars, fat, by = post1950)
@@ -98,7 +100,7 @@ llplot(wars, fat, by = post1950)
 
 ![](images/clipboard-2427994267.png)
 
-You can also indicate that you want to show the inverse Burr fit for the data (which works with or without grouping).
+You can also indicate that you want to show the inverse Burr fit for the data (which works with or without grouping) by specifying `show_fit = TRUE`.
 
 ```         
 llplot(wars, fat, by = post1950, show_fit = T)
@@ -110,14 +112,13 @@ llplot(wars, fat, by = post1950, show_fit = T)
 
 Inverse Burr models are more complex than more conventional regression models. This makes interpretation of model estimates somewhat challenging. A better way is to generate log-log plots like the type shown above using simulated draws from an inverse Burr model fit with covariates.
 
-You can use the `ibm_sim()` function to simulate random draws from a conditional inverse Burr distribution, and in combination with `llplot()` you can show the results. The below example shows how, based on the inverse Burr model for war deaths, the average democracy score among countries fighting a war conditions the distribution of potential battle deaths by war's end.
+You can use the `ibm_sim()` function to simulate random draws from a conditional inverse Burr distribution, and in combination with `llplot()` you can show the results. The below example shows how, based on the inverse Burr model for war deaths, the average democracy score among countries fighting a war conditions the distribution of potential battle deaths by war's end. By default, it performs 1,000 random draws for each combination of of model covariates you supply.
 
 ```         
 ## simulate draws for countries with different 
 ## average democracy scores
 ibm_sim(
   model_fit,
-  its = 1000,
   newdata = data.frame(
     pop = mean(wars$pop),
     maj = mean(wars$maj),
@@ -151,4 +152,4 @@ llplot(
 
 ## Additional comments
 
-If you notice any issues or bugs in using the package, you can create an issue on the package repo. You can also email the package creator at williamsmd\@denison.edu.
+If you notice any issues or bugs when using the package, you can create an issue on the package repo. You can also email the package creator at williamsmd\@denison.edu. Happy modeling!
