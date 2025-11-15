@@ -127,11 +127,9 @@ ibm_sim(
 ) -> sim_data
 
 library(ggplot2) # open to customize plot
-llplot(
-  sim_data,
-  pred,
-  by = dem
-) +
+
+## plot the conditional distributions
+llplot(sim_data, pred, by = dem) +
   scale_color_gradient2(
     low = "red",
     mid = "gray",
