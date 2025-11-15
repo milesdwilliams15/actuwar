@@ -10,6 +10,8 @@
 #' @param theta The second shape parameter. Default is a constant formula of `~ 1` or can be the right-hand side of a formula object with covariates.
 #' @param data The dataset containing the outcome and any covariates. At the moment, the function cannot handle data with missing values.
 #' @param its The function uses bootstrapping for statistical inference. How many bootstrapped iterations do you want to use? The default is 2000.
+#' @param verbose Set to `TRUE` by default. Determines whether a message about fitting and bootstrapping is returned.
+#' @examples ibm(fat, ~ post1950 + dem, ~ post1950 + dem, ~ post1950 + dem, wars)
 #' @export
 ibm <- function(
     outcome,     # the outcome
@@ -17,7 +19,8 @@ ibm <- function(
     alpha = ~ 1, # rhs for alpha
     theta = ~ 1, # rhs for theta
     data = NULL, # data
-    its = 2000) {# do inference with 2000 bootstraps
+    its = 2000,
+    verbose = TRUE) {# do inference with 2000 bootstraps
   
   ## The Data
   if(!is.null(data)) {
@@ -53,8 +56,10 @@ ibm <- function(
   }
   
   ## Say the model is being fit
-  cat("\n")
-  cat("...Fitting the model to data...")
+  if(verbose) {
+    cat("\n")
+    cat("...Fitting the model to data...")
+  }
   
   ## Estimation
   optim(
@@ -68,8 +73,10 @@ ibm <- function(
   ) -> opt_out
   
   ## Say bootstrapping is happening
-  cat("\n")
-  cat("...Performing", its, "bootstrap iterations...")
+  if(verbose) {
+    cat("\n")
+    cat("...Performing", its, "bootstrap iterations...")
+  }
   
   ## Bootstrapping
   tibble::tibble(
@@ -102,8 +109,10 @@ ibm <- function(
     ) -> boot_se
   
   ## Say it's done
-  cat("\n")
-  cat("...Done!")
+  if(verbose) {
+    cat("\n")
+    cat("...Done!")
+  }
   
   ## Return model output in a tidy tibble
   list(

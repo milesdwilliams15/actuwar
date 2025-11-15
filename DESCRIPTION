@@ -18,5 +18,7 @@ Imports:
         tidyr,
         furrr
 Depends: 
+    ggplot2,
+    dplyr,
     R (>= 2.10)
 LazyData: true

@@ -3,41 +3,81 @@
 #' This function allows you to plot a 
 #' log-log plot of Pr(X > x) given x.
 #' 
-#' @param mu The scale parameter for an inverse Burr model.
-#' @param alpha The first shape parameter for an inverse Burr model.
-#' @param theta The second shape parameter for an inverse Burr model.
-#' @param xmin Default is 0. The minimum level of x to show in the plot.
-#' @param xmax Default is 1000. The maximum level of x to show in the plot.
-#' @param len Default is 1000. The level of granularity for x.
-#' @param add Are you adding a new inverse Burr model to an existing plot? Default is `FALSE`.
-#' @param legend Default is `NULL`. Do you want to include a legend if adding additional plots? This lets you select the category name for a particular model.
-#' @param legend_title Default is `NULL`. Do you want to provide a custom name for your legend plot?
+#' @param data A data object for the variable you want to plot.
+#' @param x The variable you want to show Pr(X > x).
+#' @param by An optional grouping variable. Should be a character or factor.
+#' @param show_fit If `TRUE` the plot will include an inverse Burr fit for the data. Default is `FALSE`.
+#'
+#' @examples llplot(wars, fat, show_fit = T)
 #' @export
-llplot <- function(data, x) {
+llplot <- function(data, x, by, show_fit = FALSE) {
   if(missing(data)) {
-    data <- tibble::tibble(x = x) |>
-      tidyr::drop_na() 
-  } else {
-    data <- data |>
+    stop("A data object is missing. Did you forget to include a dataset?")
+  } 
+  if(missing(by)) {
+    x <- dplyr::enquo(x)
+    data |>
       dplyr::transmute(
-        x = !!equo(x)
-      ) |>
-      tidyr::drop_na() 
+        by = 0,
+        x = !!x
+      ) -> ndata
+  } else {
+    by <- dplyr::enquo(by)
+    x  <- dplyr::enquo(x)
+    data |>
+      dplyr::transmute(
+        by = !!by,
+        x = !!x,
+      ) -> ndata
+  }
+  ndata |>
+    tidyr::drop_na() |>
+    dplyr::group_by(by) |>
+    dplyr::mutate(
+      p = rank(-x) / max(rank(-x))
+    ) -> ndata
+  
+  if(show_fit) {
+    ndata |>
+      dplyr::group_split(by) |>
+      purrr::map(~ {
+        fit <- ibm(x, data = .x, its = 1, verbose = F)
+        
+        .x |>
+          dplyr::mutate(
+            fit = actuar::pinvburr(
+              q = x,
+              scale = exp(fit$out$estimate[1]),
+              shape1 = exp(fit$out$estimate[2]),
+              shape2 = exp(fit$out$estimate[3]),
+              lower.tail = F
+            )
+          )
+      }) |>
+      dplyr::bind_rows() -> ndata
   }
   
-  data$p <- 0
-  for(i in 1:nrow(data)) {
-    data$p[i] <- mean(data$x > data$x[i])
-  }
-  
-  ggplot2::ggplot(data) +
-    ggplot2::aes(x = x, y = p) +
-    ggplot2::geom_point() +
+  ggplot2::ggplot(ndata) +
+    ggplot2::aes(x = x, y = p, color = by) +
+    ggplot2::geom_point(
+      show.legend = !missing(by),
+      alpha = .4
+    ) +
     ggplot2::scale_x_log10() +
     ggplot2::scale_y_log10() +
     ggplot2::labs(
-      title = "Log-log plot of Pr(X > x) by x",
-      x = NULL,
-      y = NULL
-    )
+      x = dplyr::enquo(x),
+      y = "Pr(X > x)"
+    ) -> the_plot
+  
+  if(show_fit) {
+    the_plot +
+      ggplot2::geom_line(
+        ggplot2::aes(y = fit),
+        show.legend = !missing(by),
+        linewidth = .75
+      ) -> the_plot
+  }
+  
+  the_plot
 }

@@ -4,28 +4,21 @@
 \alias{llplot}
 \title{Make a log-log plot of the empirical Pr(X > x) given x}
 \usage{
-llplot(data, x)
+llplot(data, x, by, show_fit = FALSE)
 }
 \arguments{
-\item{mu}{The scale parameter for an inverse Burr model.}
+\item{data}{A data object for the variable you want to plot.}
 
-\item{alpha}{The first shape parameter for an inverse Burr model.}
+\item{x}{The variable you want to show Pr(X > x).}
 
-\item{theta}{The second shape parameter for an inverse Burr model.}
+\item{by}{An optional grouping variable. Should be a character or factor.}
 
-\item{xmin}{Default is 0. The minimum level of x to show in the plot.}
-
-\item{xmax}{Default is 1000. The maximum level of x to show in the plot.}
-
-\item{len}{Default is 1000. The level of granularity for x.}
-
-\item{add}{Are you adding a new inverse Burr model to an existing plot? Default is \code{FALSE}.}
-
-\item{legend}{Default is \code{NULL}. Do you want to include a legend if adding additional plots? This lets you select the category name for a particular model.}
-
-\item{legend_title}{Default is \code{NULL}. Do you want to provide a custom name for your legend plot?}
+\item{show_fit}{If \code{TRUE} the plot will include an inverse Burr fit for the data. Default is \code{FALSE}.}
 }
 \description{
 This function allows you to plot a
 log-log plot of Pr(X > x) given x.
+}
+\examples{
+llplot(wars, fat, show_fit = T)
 }

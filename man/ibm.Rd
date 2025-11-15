@@ -4,7 +4,15 @@
 \alias{ibm}
 \title{A function to estimate an inverse Burr regression model}
 \usage{
-ibm(outcome, mu = ~1, alpha = ~1, theta = ~1, data = NULL, its = 2000)
+ibm(
+  outcome,
+  mu = ~1,
+  alpha = ~1,
+  theta = ~1,
+  data = NULL,
+  its = 2000,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{outcome}{The outcome being modeled.}
@@ -18,9 +26,14 @@ ibm(outcome, mu = ~1, alpha = ~1, theta = ~1, data = NULL, its = 2000)
 \item{data}{The dataset containing the outcome and any covariates. At the moment, the function cannot handle data with missing values.}
 
 \item{its}{The function uses bootstrapping for statistical inference. How many bootstrapped iterations do you want to use? The default is 2000.}
+
+\item{verbose}{Set to \code{TRUE} by default. Determines whether a message about fitting and bootstrapping is returned.}
 }
 \description{
 This function allows you to fit an inverse Burr model of some outcome
 either using constant parameter values for the distribution's scale and
 two shape parameters, or else using covariates to fit these parameters.
+}
+\examples{
+ibm(fat, ~ post1950 + dem, ~ post1950 + dem, ~ post1950 + dem, wars)
 }
