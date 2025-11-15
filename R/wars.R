@@ -13,7 +13,7 @@
 #'  \item{ pop }{ integer: natural log of the combined populations of belligerent countries in thousands }
 #'  \item{ mil }{ integer: natural log of the combined military personnel of belligerent countries in thousands }
 #'  \item{ maj }{ integer: binary indicator for whether at least one belligerent country was a major power }
-#'  \item{ post1950 }{ integer: binary indicator for whether the war started after 1950 }
+#'  \item{ post1950 }{ character: indicator for whether the war started after 1950 }
 #' }
 #'
 #'

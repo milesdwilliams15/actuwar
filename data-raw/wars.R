@@ -71,7 +71,7 @@ ydt |>
   mutate(
     pop = log(pop),
     mil = log(mil),
-    post1950 = (year > 1950) + 0
+    post1950 = ifelse(year > 1950, "post-1950", "pre-1950")
   ) -> wars
 
 ## Save the data as .rda file ----
