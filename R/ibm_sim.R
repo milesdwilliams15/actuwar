@@ -31,17 +31,18 @@ ibm_sim <- function(model, its = 1000, newdata = NULL, se = FALSE) {
   
   ## make a function to calculate conditional fitted parameters given data
   param_fit <- function(model, data = pdata, par, se) {
-    npars <- 1:nrow(model$out)
-    names(npars) <- model$out$param
+    npars <- 1:nrow(model$summary)
+    names(npars) <- model$summary$param
     X <- data[, npars[names(npars) == par]]
-    coefs <- model$out |>
-      dplyr::filter(param == par) |>
-      dplyr::pull(estimate)
     if(se) {
-      ses <- model$out |>
+      coefs <- model$boot_values |>
+        dplyr::filter(its == sample(unique(its), 1)) |>
         dplyr::filter(param == par) |>
-        dplyr::pull(std.error)
-      coefs <- rnorm(length(coefs), coefs, ses)
+        dplyr::pull(estimate)
+    } else {
+      coefs <- model$summary |>
+        dplyr::filter(param == par) |>
+        dplyr::pull(estimate)
     }
     exp(X %*% coefs)
   }

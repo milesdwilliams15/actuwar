@@ -16,11 +16,17 @@ boot_p <- function(data, var, thresh, its = 1000, ci = 0.95) {
     stop("Option 'thresh' is missing. You should specify a threshold value for which to compute Pr(X > x).")
   }
   
-  ## bootstrap the data and get Pr(X > x)
+  ## get the observed Pr(X > x)
   data |>
     dplyr::mutate(
       x = !!dplyr::enquo(var)
     ) -> data
+  data |>
+    dplyr::summarize(
+      estimate = mean(x > thresh)
+    ) -> obs_out
+  
+  ## bootstrap the data and get Pr(X > x)
   1:its |>
     furrr::future_map_dfr(
       ~ data |>
@@ -35,11 +41,17 @@ boot_p <- function(data, var, thresh, its = 1000, ci = 0.95) {
   ## return a summary of bootstrapped Pr(X > x)
   boot_out |>
     dplyr::summarize(
-      mean = mean(prob),
-      median = median(prob),
-      se = sd(prob),
-      lower = quantile(prob, 1 - (ci + (1 - ci) / 2)),
-      upper = quantile(prob, ci + (1 - ci) / 2),
+      boot_mean = mean(prob),
+      boot_median = median(prob),
+      boot_se = sd(prob),
+      boot_lower = quantile(prob, 1 - (ci + (1 - ci) / 2)),
+      boot_upper = quantile(prob, ci + (1 - ci) / 2),
       sims = its
-    )
+    ) -> boot_out
+  
+  if(nrow(obs_out) == 1) {
+    dplyr::bind_cols(obs_out, boot_out)
+  } else {
+    suppressMessages(dplyr::left_join(obs_out, boot_out))
+  }
 }

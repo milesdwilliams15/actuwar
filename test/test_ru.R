@@ -51,34 +51,34 @@ ibm(
   mu = ~ log(pop) + maj + dem,
   alpha = ~ log(pop) + maj + dem,
   theta = ~ log(pop) + maj + dem,
-  data = wars
+  data = wars,
+  its = 200
 ) -> model_fit
 
 ibm_sim(
   model_fit,
-  its = 2000,
   newdata = data.frame(
     pop = mean(wars$pop),
-    maj = 0:1,
-    dem = mean(wars$dem)
+    post1950 = mean(wars$maj),
+    dem = c(-5, 0, 5)
   ),
   se = T
 ) -> sim_data
 
-library(ggplot2)
 llplot(
   sim_data,
   pred,
-  by = maj
+  by = dem
 ) +
-  scale_color_gradient(
+  labs(
+    color = "Avg. Polity 2"
+  ) +
+  scale_color_gradient2(
     low = "red",
+    mid = "gray",
     high = "blue",
     guide = "legend",
-    breaks = 0:1
-  ) +
-  labs(
-    color = "Major Power"
+    breaks = c(-5, 0, 5)
   ) +
   theme(
     legend.position = c(.2, .25),
@@ -86,9 +86,15 @@ llplot(
   )
 
 sim_data |>
-  group_by(maj) |>
-  boot_p(pred, thresh = 1e06) |>
+  group_by(dem) |>
+  boot_p(pred, thresh = 16e06, ci = 0.834) |>
   ggplot() +
-  aes(as.factor(maj), mean, ymin = lower, ymax = upper) +
+  aes(as.factor(dem), estimate, ymin = boot_lower, ymax = boot_upper) +
   geom_pointrange()
 
+wars |>
+  group_by(post1950) |>
+  boot_p(fat, thresh = 1e06, ci = 0.834) |>
+  ggplot() +
+  aes(post1950, estimate, ymin = boot_lower, ymax = boot_upper) +
+  geom_pointrange()

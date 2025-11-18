@@ -102,7 +102,8 @@ ibm <- function(
       .options = furrr::furrr_options(seed = T)
     )
   ) |>
-    tidyr::unnest(cols = bout) |>
+    tidyr::unnest(cols = bout) -> boot_values
+  boot_values |>
     dplyr::group_by(pars) |>
     dplyr::summarize(
       std.error = sd(vals, na.rm=T)
@@ -116,7 +117,7 @@ ibm <- function(
   
   ## Return model output in a tidy tibble
   list(
-    out = tibble::tibble(
+    summary = tibble::tibble(
       param = c(
         rep("mu", len = ncol(x1)),
         rep("alpha", len = ncol(x2)),
@@ -134,6 +135,21 @@ ibm <- function(
         -abs(statistic)
       ) |> round(3)
     ),
+    boot_values = boot_values |>
+      dplyr::transmute(
+        param = c(
+          rep("mu", len = ncol(x1)),
+          rep("alpha", len = ncol(x2)),
+          rep("theta", len = ncol(x3))
+        ) |> rep(len = n()),
+        term = c(
+          colnames(x1),
+          colnames(x2),
+          colnames(x3)
+        ) |> rep(len = n()),
+        estimate = vals,
+        its = its
+      ),
     model_data = model_data,
     logLik = -opt_out$value
   )
