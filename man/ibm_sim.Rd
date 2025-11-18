@@ -4,7 +4,7 @@
 \alias{ibm_sim}
 \title{Simulate draws from a fitted inverse Burr model}
 \usage{
-ibm_sim(model, its = 1000, newdata = NULL)
+ibm_sim(model, its = 1000, newdata = NULL, se = FALSE)
 }
 \arguments{
 \item{model}{A model fit with the \code{ibm()} function.}
@@ -12,8 +12,12 @@ ibm_sim(model, its = 1000, newdata = NULL)
 \item{its}{The number of random draws. The default is 1,000.}
 
 \item{newdata}{An optional data frame with new covariate values to use for simulated values.}
+
+\item{se}{Specify whether coefficient standard errors should be factored into the simulation. Default is \code{FALSE}.}
 }
 \description{
 This function allows you to simulate random draws from an
-inverse Burr model fit using the \code{ibm()} function.
+inverse Burr model fit using the \code{ibm()} function. It uses
+\code{{furrr}} under the hood giving you the option to perform the simulation
+with parallel processing.
 }

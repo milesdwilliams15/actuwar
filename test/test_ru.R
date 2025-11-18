@@ -56,31 +56,39 @@ ibm(
 
 ibm_sim(
   model_fit,
-  its = 1000,
+  its = 2000,
   newdata = data.frame(
     pop = mean(wars$pop),
-    maj = mean(wars$maj),
-    dem = c(-5, 0, 5)
-  )
+    maj = 0:1,
+    dem = mean(wars$dem)
+  ),
+  se = T
 ) -> sim_data
 
 library(ggplot2)
 llplot(
   sim_data,
   pred,
-  by = dem
+  by = maj
 ) +
-  scale_color_gradient2(
+  scale_color_gradient(
     low = "red",
-    mid = "gray",
     high = "blue",
     guide = "legend",
-    breaks = c(-5, 0, 5)
+    breaks = 0:1
   ) +
   labs(
-    color = "Avg. Polity 2"
+    color = "Major Power"
   ) +
   theme(
     legend.position = c(.2, .25),
     legend.title = element_text(size = 8)
   )
+
+sim_data |>
+  group_by(maj) |>
+  boot_p(pred, thresh = 1e06) |>
+  ggplot() +
+  aes(as.factor(maj), mean, ymin = lower, ymax = upper) +
+  geom_pointrange()
+

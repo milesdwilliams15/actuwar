@@ -12,6 +12,7 @@ A data frame with 95 rows and 9 variables:
 \item{ n }{ integer: the number of countries that participated in a war by its end }
 \item{ fat }{ integer: count of battle deaths by war's end }
 \item{ pop }{ integer: natural log of the combined populations of belligerent countries in thousands }
+\item{ dem }{ integer: the average Polity 2 scores of the belligerent countries.}
 \item{ mil }{ integer: natural log of the combined military personnel of belligerent countries in thousands }
 \item{ maj }{ integer: binary indicator for whether at least one belligerent country was a major power }
 \item{ post1950 }{ character: indicator for whether the war started after 1950 }
