@@ -47,9 +47,9 @@ llplot <- function(data, x, by, show_fit = FALSE) {
           dplyr::mutate(
             fit = actuar::pinvburr(
               q = x,
-              scale = exp(fit$out$estimate[1]),
-              shape1 = exp(fit$out$estimate[2]),
-              shape2 = exp(fit$out$estimate[3]),
+              scale = exp(fit$summary$estimate[1]),
+              shape1 = exp(fit$summary$estimate[2]),
+              shape2 = exp(fit$summary$estimate[3]),
               lower.tail = F
             )
           )

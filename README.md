@@ -13,7 +13,7 @@ The `{actuwar}` package allows users to estimate an inverse Burr regression mode
 To install the latest development version of the package:
 
 ```         
-library(devtools)
+install.packages("devtools")
 devtools::install_github("milesdwilliams15/actuwar")
 ```
 
