@@ -1,156 +1,231 @@
-#' A function to estimate an inverse Burr regression model
-#' 
-#' This function allows you to fit an inverse Burr model of some outcome
-#' either using constant parameter values for the distribution's scale and 
-#' two shape parameters, or else using covariates to fit these parameters.
-#' 
-#' @param outcome The outcome being modeled.
-#' @param mu The scale parameter. Default is a constant formula of `~ 1` or can be the right-hand side of a formula object with covariates.
-#' @param alpha The first shape parameter. Default is a constant formula of `~ 1` or can be the right-hand side of a formula object with covariates.
-#' @param theta The second shape parameter. Default is a constant formula of `~ 1` or can be the right-hand side of a formula object with covariates.
-#' @param data The dataset containing the outcome and any covariates. At the moment, the function cannot handle data with missing values.
-#' @param its The function uses bootstrapping for statistical inference. How many bootstrapped iterations do you want to use? The default is 2000.
-#' @param verbose Set to `TRUE` by default. Determines whether a message about fitting and bootstrapping is returned.
-#' @examples ibm(fat, ~ post1950 + dem, ~ post1950 + dem, ~ post1950 + dem, wars)
+#' Estimate an Inverse Burr Regression Model
+#'
+#' Fits an inverse Burr regression model where the scale (\code{mu}) and
+#' two shape parameters (\code{alpha}, \code{theta}) may be modeled as
+#' functions of covariates via log-link parameterization.
+#'
+#' @param outcome The outcome variable to be modeled. Can be supplied
+#'   unquoted if \code{data} is provided, or as a numeric vector.
+#' @param mu A right-hand-side formula specifying the linear predictor
+#'   for the scale parameter. Default is \code{~ 1}.
+#' @param alpha A right-hand-side formula specifying the linear predictor
+#'   for the first shape parameter. Default is \code{~ 1}.
+#' @param theta A right-hand-side formula specifying the linear predictor
+#'   for the second shape parameter. Default is \code{~ 1}.
+#' @param data A data frame containing the outcome and covariates.
+#' @param its Number of bootstrap iterations for inference. Default is 2000.
+#' @param verbose Logical. If \code{TRUE}, progress messages are shown.
+#'
+#' @returns A list with the following components:
+#' \describe{
+#'   \item{summary}{A tibble with parameter estimates and inference:
+#'     \code{param}, \code{term}, \code{estimate},
+#'     \code{std.error}, \code{statistic}, \code{p.value}.}
+#'   \item{boot_values}{A tibble containing bootstrap coefficient
+#'     estimates by iteration.}
+#'   \item{model_matrix}{The combined model matrix used for estimation.}
+#'   \item{logLik}{The maximized log-likelihood value.}
+#'   \item{convergence}{Logical indicating whether optimization converged.}
+#' }
+#'
+#' @examples
+#' fit <- ibm(fat, ~ pre1950 + dem, ~ pre1950 + dem, ~ pre1950 + dem, wars)
+#' fit$summary
+#'
 #' @export
 ibm <- function(
-    outcome,     # the outcome
-    mu = ~ 1,    # rhs for mu
-    alpha = ~ 1, # rhs for alpha
-    theta = ~ 1, # rhs for theta
-    data = NULL, # data
+    outcome,
+    mu = ~ 1,
+    alpha = ~ 1,
+    theta = ~ 1,
+    data = NULL,
     its = 2000,
-    verbose = TRUE) {# do inference with 2000 bootstraps
+    verbose = TRUE
+) {
   
-  ## The Data
-  if(!is.null(data)) {
-    y <- data |> dplyr::pull(!!dplyr::enquo(outcome))
+  ## --------------------------
+  ## Input checks
+  ## --------------------------
+  
+  if (!is.numeric(its) || its <= 0) {
+    stop("`its` must be a positive integer.")
+  }
+  
+  if (!is.null(data)) {
+    y <- dplyr::pull(data, !!rlang::enquo(outcome))
   } else {
     y <- outcome
   }
-  x1 <- model.matrix(mu, data)
-  x2 <- model.matrix(alpha, data)
-  x3 <- model.matrix(theta, data)
-  model_data <- cbind(x1, x2, x3)
   
-  ## The likelihood
-  inbur_lik <- function(x1, x2, x3, y, pars) {
-    b <- matrix(
-      data = pars[1:(ncol(x1) + ncol(x2) + ncol(x3))],
-      nrow = ncol(x1) + ncol(x2) + ncol(x3),
-      ncol = 1
-    )
-    mu <- exp(x1 %*% b[1:ncol(x1)])
-    alpha <- exp(x2 %*% b[ncol(x1) + 1:ncol(x2)])
-    theta <- exp(x3 %*% b[ncol(x1) + ncol(x2) + 1:ncol(x3)])
-    sum(
-      - log(
-        actuar::dinvburr(
-          y, 
-          shape1 = alpha,
-          shape2 = theta,
-          scale = mu
-        )
-      )
-    )
+  if (!is.numeric(y)) {
+    stop("Outcome must be numeric.")
   }
   
-  ## Say the model is being fit
-  if(verbose) {
-    cat("\n")
-    cat("...Fitting the model to data...")
+  if (anyNA(y)) {
+    stop("Missing values are not allowed.")
   }
   
+  if (any(y <= 0)) {
+    stop("Outcome must be strictly positive for the inverse Burr distribution.")
+  }
+  
+  ## --------------------------
+  ## Model matrices
+  ## --------------------------
+  
+  if (is.null(data) &&
+      (!identical(mu, ~1) ||
+       !identical(alpha, ~1) ||
+       !identical(theta, ~1))) {
+    stop("If formulas include covariates, `data` must be supplied.")
+  }
+  
+  x1 <- stats::model.matrix(mu, data)
+  x2 <- stats::model.matrix(alpha, data)
+  x3 <- stats::model.matrix(theta, data)
+  
+  model_matrix <- cbind(x1, x2, x3)
+  
+  p1 <- ncol(x1)
+  p2 <- ncol(x2)
+  p3 <- ncol(x3)
+  p_total <- p1 + p2 + p3
+  
+  ## --------------------------
+  ## Likelihood
+  ## --------------------------
+  
+  inbur_lik <- function(pars, x1, x2, x3, y) {
+    
+    b1 <- pars[1:p1]
+    b2 <- pars[(p1 + 1):(p1 + p2)]
+    b3 <- pars[(p1 + p2 + 1):(p_total)]
+    
+    mu_val    <- exp(x1 %*% b1)
+    alpha_val <- exp(x2 %*% b2)
+    theta_val <- exp(x3 %*% b3)
+    
+    dens <- actuar::dinvburr(
+      y,
+      shape1 = alpha_val,
+      shape2 = theta_val,
+      scale  = mu_val
+    )
+    
+    if (any(dens <= 0) || any(!is.finite(dens))) {
+      return(Inf)
+    }
+    
+    -sum(log(dens))
+  }
+  
+  ## --------------------------
   ## Estimation
-  optim(
-    par = rep(0, len = ncol(x1) + ncol(x2) + ncol(x3)),
-    fn = inbur_lik,
+  ## --------------------------
+  
+  if (verbose) message("Fitting model...")
+  
+  opt_out <- stats::optim(
+    par = rep(0, p_total),
+    fn  = inbur_lik,
     x1 = x1,
     x2 = x2,
     x3 = x3,
-    y = y,
-    hessian = F
-  ) -> opt_out
+    y  = y,
+    hessian = FALSE
+  )
   
-  ## Say bootstrapping is happening
-  if(verbose) {
-    cat("\n")
-    cat("...Performing", its, "bootstrap iterations...")
+  converged <- opt_out$convergence != 0
+  
+  if (!converged) {
+    warning("Optimization may not have converged.")
   }
   
-  ## Bootstrapping
-  tibble::tibble(
-    its = 1:its,
-    bout = furrr::future_map(
-      its,
-      ~ {
-        bkeep <- sample(1:length(y), length(y), T)
-        optim(
-          par = rep(0, len = ncol(x1) + ncol(x2) + ncol(x3)),
-          fn = inbur_lik,
-          x1 = x1[bkeep, , drop = F],
-          x2 = x2[bkeep, , drop = F],
-          x3 = x3[bkeep, , drop = F],
-          y = y[bkeep],
-          hessian = F
-        ) -> opt_out
-        tibble::tibble(
-          pars = 1:length(opt_out$par),
-          vals = opt_out$par
-        )
-      },
-      .options = furrr::furrr_options(seed = T)
-    )
-  ) |>
-    tidyr::unnest(cols = bout) -> boot_values
-  boot_values |>
-    dplyr::group_by(pars) |>
-    dplyr::summarize(
-      std.error = sd(vals, na.rm=T)
-    ) -> boot_se
+  ## --------------------------
+  ## Bootstrap
+  ## --------------------------
   
-  ## Say it's done
-  if(verbose) {
-    cat("\n")
-    cat("...Done!")
-  }
+  if (verbose) message("Bootstrapping ", its, " iterations...")
   
-  ## Return model output in a tidy tibble
+  boot_list <- furrr::future_map(
+    seq_len(its),
+    function(i) {
+      
+      idx <- sample.int(length(y), length(y), replace = TRUE)
+      
+      res <- try(
+        stats::optim(
+          par = opt_out$par,
+          fn  = inbur_lik,
+          x1 = x1[idx, , drop = FALSE],
+          x2 = x2[idx, , drop = FALSE],
+          x3 = x3[idx, , drop = FALSE],
+          y  = y[idx],
+          hessian = FALSE
+        ),
+        silent = TRUE
+      )
+      
+      if (inherits(res, "try-error")) {
+        return(rep(NA_real_, p_total))
+      }
+      
+      res$par
+    },
+    .options = furrr::furrr_options(seed = TRUE)
+  )
+  
+  boot_mat <- do.call(rbind, boot_list)
+  
+  boot_se <- apply(boot_mat, 2, stats::sd, na.rm = TRUE)
+  
+  ## --------------------------
+  ## Summary construction
+  ## --------------------------
+  
+  est <- opt_out$par
+  z   <- est / boot_se
+  p   <- 2 * stats::pnorm(-abs(z))
+  
+  param_labels <- c(
+    rep("mu", p1),
+    rep("alpha", p2),
+    rep("theta", p3)
+  )
+  
+  term_labels <- c(
+    colnames(x1),
+    colnames(x2),
+    colnames(x3)
+  )
+  
+  summary_tbl <- tibble::tibble(
+    param = param_labels,
+    term = term_labels,
+    estimate = est,
+    std.error = boot_se,
+    statistic = z,
+    p.value = round(p, 3)
+  )
+  
+  boot_values <- tibble::tibble(
+    iteration = rep(seq_len(its), each = p_total),
+    param = rep(param_labels, times = its),
+    term = rep(term_labels, times = its),
+    estimate = as.vector(t(boot_mat))
+  )
+  
+  if (verbose) message("Done.")
+  
+  ## --------------------------
+  ## Return
+  ## --------------------------
+  
   list(
-    summary = tibble::tibble(
-      param = c(
-        rep("mu", len = ncol(x1)),
-        rep("alpha", len = ncol(x2)),
-        rep("theta", len = ncol(x3))
-      ),
-      term = c(
-        colnames(x1),
-        colnames(x2),
-        colnames(x3)
-      ),
-      estimate = opt_out$par,
-      std.error = boot_se$std.error,
-      statistic = estimate / std.error,
-      p.value = 2*pnorm(
-        -abs(statistic)
-      ) |> round(3)
-    ),
-    boot_values = boot_values |>
-      dplyr::transmute(
-        param = c(
-          rep("mu", len = ncol(x1)),
-          rep("alpha", len = ncol(x2)),
-          rep("theta", len = ncol(x3))
-        ) |> rep(len = n()),
-        term = c(
-          colnames(x1),
-          colnames(x2),
-          colnames(x3)
-        ) |> rep(len = n()),
-        estimate = vals,
-        its = its
-      ),
-    model_data = model_data,
-    logLik = -opt_out$value
+    summary = summary_tbl,
+    boot_values = boot_values,
+    model_matrix = model_matrix,
+    logLik = -opt_out$value,
+    convergence = converged
   )
 }

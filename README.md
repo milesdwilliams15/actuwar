@@ -1,12 +1,12 @@
 # {actuwar} <img src="inst/logo.png" align="right" width="200"/>
 
-![R-version](https://img.shields.io/badge/R%20%3E%3D-4.2.1-brightgreen) ![updated](https://img.shields.io/badge/last%20update-11--18--2025-brightgreen) ![version](https://img.shields.io/badge/version-1.0.0-brightgreen) ![license](https://img.shields.io/badge/license-MIT-red) ![encoding](https://img.shields.io/badge/encoding-UTF--8-red) [![orchid](https://img.shields.io/badge/ORCID-0000--0003--0192--5542-brightgreen)](https://orcid.org/0000-0003-0192-5542)
+![R-version](https://img.shields.io/badge/R%20%3E%3D-4.2.1-brightgreen) ![updated](https://img.shields.io/badge/last%20update-02--13--2026-brightgreen) ![version](https://img.shields.io/badge/version-1.0.1-brightgreen) ![license](https://img.shields.io/badge/license-MIT-red) ![encoding](https://img.shields.io/badge/encoding-UTF--8-red) [![orchid](https://img.shields.io/badge/ORCID-0000--0003--0192--5542-brightgreen)](https://orcid.org/0000-0003-0192-5542)
 
 An R package for estimating inverse Burr regression models for heavy-tailed data.
 
 ------------------------------------------------------------------------
 
-The `{actuwar}` package allows users to estimate an inverse Burr regression model. Such models are useful for studying outcomes with thick-tailed distributions. The present package was motivated by a recent paper by [Cunen et al. (2020)](https://journals.sagepub.com/doi/10.1177/0022343319896843) who used the inverse Burr to model war fatalities. Their approach was sound, but it lacked a convenient API to make the method accessible for wider use.
+The `{actuwar}` package allows users to estimate an inverse Burr regression model. Such models are useful for studying outcomes with thick-tailed distributions. The present package was motivated by a recent paper by [Cunen et al. (2020)](https://journals.sagepub.com/doi/10.1177/0022343319896843) who used the inverse Burr to model war fatalities. `{actuwar}` provides a convenient API to make their method accessible for wider use.
 
 ## Installation
 
@@ -23,7 +23,7 @@ The package currently is only available on GitHub. Any new updates that are made
 
 The `{actuwar}` package was designed with the end-user in mind. That means its workhorse function for estimating an inverse Burr regression model follows the same conventions as other regression model functions R users are accustomed to, such as `lm()`.
 
-However, the inverse Burr is more complex than a simple linear regression where the goal is to model the conditional mean of an outcome. The inverse Burr has three parameters, a scale and two shape parameters, any of which can be left constant or conditioned on covariates. The interface for estimating the model, therefore, is a bit more involved—but only just. The below code snippet provides an example using the `wars` dataset (available with the `{actuwar}` package). The code works by specifying an outcome and then supplying up to three right-hand side only formula objects for each of the three model parameters: `mu` for the scale (or central tendency), `alpha` for the density to the left of the mode, and `theta` for the density to the right of the mode.
+However, the inverse Burr is more complex than a simple linear regression where the goal is to model the conditional mean of an outcome. The inverse Burr has three parameters, a scale and two shape parameters, any of which can be left constant or conditioned on covariates. The interface for estimating the model, therefore, is a bit more involved—but only just. The below code snippet provides an example using the `wars` dataset (available with the `{actuwar}` package). The code works by specifying an outcome and then supplying up to three right-hand side only formula objects for each of the three model parameters: `mu` for the scale (or central tendency), `alpha` for dispersion, and `theta` for the thickness of the right-hand tail of the distribution.
 
 ```         
 library(actuwar)
@@ -31,9 +31,9 @@ data("wars") # use `wars` data object with {actuwar}
 
 ibm(
   outcome = fat,
-  mu = ~ log(pop) + maj + dem,
-  alpha = ~ log(pop) + maj + dem,
-  theta = ~ log(pop) + maj + dem,
+  mu = ~ pop + maj + dem,
+  alpha = ~ pop + maj + dem,
+  theta = ~ pop + maj + dem,
   data = wars
 ) -> model_fit
 ```
@@ -51,16 +51,16 @@ plan(multisession, workers = cores)
 ## estimate the model
 ibm(
   outcome = fat,
-  mu = ~ log(pop) + maj + dem,
-  alpha = ~ log(pop) + maj + dem,
-  theta = ~ log(pop) + maj + dem,
+  mu = ~ pop + maj + dem,
+  alpha = ~ pop + maj + dem,
+  theta = ~ pop + maj + dem,
   data = wars
 ) -> model_fit
 ```
 
 You can also choose whether the `ibm()` function "talks" to you about the progress it's making in estimating the model by setting `verbose` to `TRUE` or `FALSE`. The default is `TRUE`. As a matter of preference, some like having a visual cue that the model is working (especially if run time takes a while), but others would rather avoid the clutter.
 
-Finally, to see the regression results summary, you can pull it directly from the fitted model object using `.$summary`:
+Finally, to see the regression results summary, you can pull it directly from the fitted model object using `.$summary`. (Note that in the below I rounded to 2 decimal points.)
 
 ```         
 model_fit$summary
@@ -68,21 +68,21 @@ model_fit$summary
 # A tibble: 12 × 6
    param term        estimate std.error statistic p.value
    <chr> <chr>          <dbl>     <dbl>     <dbl>   <dbl>
- 1 mu    (Intercept)  -0.609     0.757     -0.804   0.422
- 2 mu    log(pop)      0.744     1.23       0.607   0.544
- 3 mu    maj          -0.779     0.795     -0.981   0.326
- 4 mu    dem          -0.982     0.404     -2.43    0.016
- 5 alpha (Intercept)   0.123     0.964      0.127   0.898
- 6 alpha log(pop)      1.78      0.688      2.58    0.01 
- 7 alpha maj          -0.170     0.655     -0.260   0.794
- 8 alpha dem           0.445     0.285      1.56    0.118
- 9 theta (Intercept)   0.436     0.591      0.738   0.46 
-10 theta log(pop)     -0.377     0.261     -1.44    0.15 
-11 theta maj          -0.113     0.134     -0.846   0.398
-12 theta dem          -0.0138    0.0373    -0.370   0.712
+ 1 mu    (Intercept)     0.51      1.18      0.43    0.66
+ 2 mu    pop             0.21      0.09      2.45    0.01
+ 3 mu    maj            -0.4       1.12     -0.35    0.72
+ 4 mu    dem             0.07      0.2       0.34    0.74
+ 5 alpha (Intercept)     2.11      1.01      2.09    0.04
+ 6 alpha pop             0.28      0.07      3.99    0.00   
+ 7 alpha maj            -2.2       0.82     -2.69    0.01
+ 8 alpha dem             0.02      0.13      0.16    0.88
+ 9 theta (Intercept)    -0.18      0.23     -0.81    0.42
+10 theta pop             0.01      0.02      0.69    0.49
+11 theta maj            -0.45      0.17     -2.69    0.01
+12 theta dem             0.04      0.02      1.58    0.11
 ```
 
-Other objects can be pulled out of the model as well: the empirical distribution of bootstrapped parameters (`.$boot_values`), the model data (`.$model_data`), and the negative log likelihood (`.$logLik`).
+Other objects can be pulled out of the model as well: the empirical distribution of bootstrapped parameters (`.$boot_values`), the model data (`.$model_matrix`), the negative log likelihood (`.$logLik`), and a logical indicator of whether the model converged (`.$convergence`).
 
 ## Visualizing data
 
@@ -148,7 +148,7 @@ llplot(sim_data, pred, by = dem) +
   )
 ```
 
-![](images/clipboard-2562645169.png)
+![](images/clipboard-1244365390.png)
 
 `ibm_sim()` gives you the option to factor in parameter uncertainty into your simulation as well. You can control this with the `se` option. The default is `FALSE`. Setting to `TRUE` means that model coefficients used for simulations are randomly drawn from the empirical distribution of bootstrapped coefficients saved with the `ibm()` output. While the choice is up to the user, accounting for parameter uncertainty can offer a more representative range of simulated values that are consistent with the data. You can see an example below:
 
@@ -183,11 +183,11 @@ llplot(sim_data, pred, by = dem) +
   )
 ```
 
-![](images/clipboard-2477542272.png)
+![](images/clipboard-425491390.png)
 
 ## Inferring Pr(X \> x)
 
-A common quantity of interest when working with thick-tailed data is Pr(X \> x), or the probability that an event will be larger than some threshold. `{actuwar}` has a function called `boot_p()` that lets users compute this quantity, either with the raw data or with simulated data genterated using `ibm_sim()`. `boot_p()` peforms bootstrapping under the hood for interference, and by default it returns 95% bootstrap quantile intervals. It also returns the bootstrap standard error if users would rather use this to construct their own confidence intervals. By default, it does 1,000 bootstrap iterations, and like `ibm()` and `ibm_sim()` it uses `{furrr}` under the hood, supporting parallel processing.
+A common quantity of interest when working with thick-tailed data is Pr(X \> x), or the probability that an event will be larger than some threshold. `{actuwar}` has a function called `boot_p()` that lets users compute this quantity, either with the raw data or with simulated data generated using `ibm_sim()`. `boot_p()` performs bootstrapping under the hood for interference, and by default it returns 95% bootstrap quantile intervals along with a point estimate for Pr(X \> x). These values are returned in a data frame and denoted by the columns `estimate`, `lower`, and `upper`. If the data frame giving to `boot_p()` was grouped, the grouping columns and their values will be returned as well. By default, it does 1,000 bootstrap iterations, and like `ibm()` and `ibm_sim()` it uses `{furrr}` under the hood, supporting parallel processing.
 
 The below example shows how this function can be used with the raw data. Note that it works with `group_by()` since the function uses `summarize()` from `{dplyr}` under the hood to summarize the results.
 
@@ -196,11 +196,11 @@ wars |>
   group_by(post1950) |>
   boot_p(fat, thresh = 1e06, ci = 0.834) |>
   ggplot() +
-  aes(post1950, estimate, ymin = boot_lower, ymax = boot_upper) +
+  aes(post1950, estimate, ymin = lower, ymax = upper) +
   geom_pointrange()
 ```
 
-![](images/clipboard-2272614136.png)
+![](images/clipboard-135343921.png)
 
 When giving `boot_p()` data simulated from a model fit, you can use it to show how model covariates condition the risk of wars larger than some magnitude of interest (like the near 16 million battle deaths recorded for WWII). The below results suggest that the chances of such a war are small, but significantly higher for wars involving autocracies, followed by democracies and then anocracies.
 
@@ -209,11 +209,11 @@ sim_data |>
   group_by(dem) |>
   boot_p(pred, thresh = 16e06, ci = 0.834) |>
   ggplot() +
-  aes(as.factor(dem), estimate, ymin = boot_lower, ymax = boot_upper) +
+  aes(as.factor(dem), estimate, ymin = lower, ymax = upper) +
   geom_pointrange()
 ```
 
-![](images/clipboard-3520320610.png)
+![](images/clipboard-2518910634.png)
 
 ## Additional comments
 

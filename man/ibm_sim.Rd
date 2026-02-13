@@ -15,9 +15,17 @@ ibm_sim(model, its = 1000, newdata = NULL, se = FALSE)
 
 \item{se}{Specify whether coefficient standard errors should be factored into the simulation. Default is \code{FALSE}.}
 }
+\value{
+A data frame, either the original model matrix or the new data object supplied along with simulated predictions in a new column called \code{pred}. The returned data frame will have as many rows as simulation iterations times the number of unique covariate value combinations provided.
+}
 \description{
 This function allows you to simulate random draws from an
 inverse Burr model fit using the \code{ibm()} function. It uses
 \code{{furrr}} under the hood giving you the option to perform the simulation
 with parallel processing.
+}
+\examples{
+fit   <- ibm(fat, ~ post1950 + dem, ~ post1950 + dem, ~ post1950 + dem, wars)
+preds <- ibm_sim(fit, newdata = data.frame(post1950 == "post-1950", dem = .5))
+
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/ibm.R
 \name{ibm}
 \alias{ibm}
-\title{A function to estimate an inverse Burr regression model}
+\title{Estimate an Inverse Burr Regression Model}
 \usage{
 ibm(
   outcome,
@@ -15,25 +15,44 @@ ibm(
 )
 }
 \arguments{
-\item{outcome}{The outcome being modeled.}
+\item{outcome}{The outcome variable to be modeled. Can be supplied
+unquoted if \code{data} is provided, or as a numeric vector.}
 
-\item{mu}{The scale parameter. Default is a constant formula of \code{~ 1} or can be the right-hand side of a formula object with covariates.}
+\item{mu}{A right-hand-side formula specifying the linear predictor
+for the scale parameter. Default is \code{~ 1}.}
 
-\item{alpha}{The first shape parameter. Default is a constant formula of \code{~ 1} or can be the right-hand side of a formula object with covariates.}
+\item{alpha}{A right-hand-side formula specifying the linear predictor
+for the first shape parameter. Default is \code{~ 1}.}
 
-\item{theta}{The second shape parameter. Default is a constant formula of \code{~ 1} or can be the right-hand side of a formula object with covariates.}
+\item{theta}{A right-hand-side formula specifying the linear predictor
+for the second shape parameter. Default is \code{~ 1}.}
 
-\item{data}{The dataset containing the outcome and any covariates. At the moment, the function cannot handle data with missing values.}
+\item{data}{A data frame containing the outcome and covariates.}
 
-\item{its}{The function uses bootstrapping for statistical inference. How many bootstrapped iterations do you want to use? The default is 2000.}
+\item{its}{Number of bootstrap iterations for inference. Default is 2000.}
 
-\item{verbose}{Set to \code{TRUE} by default. Determines whether a message about fitting and bootstrapping is returned.}
+\item{verbose}{Logical. If \code{TRUE}, progress messages are shown.}
+}
+\value{
+A list with the following components:
+\describe{
+\item{summary}{A tibble with parameter estimates and inference:
+\code{param}, \code{term}, \code{estimate},
+\code{std.error}, \code{statistic}, \code{p.value}.}
+\item{boot_values}{A tibble containing bootstrap coefficient
+estimates by iteration.}
+\item{model_matrix}{The combined model matrix used for estimation.}
+\item{logLik}{The maximized log-likelihood value.}
+\item{convergence}{Logical indicating whether optimization converged.}
+}
 }
 \description{
-This function allows you to fit an inverse Burr model of some outcome
-either using constant parameter values for the distribution's scale and
-two shape parameters, or else using covariates to fit these parameters.
+Fits an inverse Burr regression model where the scale (\code{mu}) and
+two shape parameters (\code{alpha}, \code{theta}) may be modeled as
+functions of covariates via log-link parameterization.
 }
 \examples{
-ibm(fat, ~ post1950 + dem, ~ post1950 + dem, ~ post1950 + dem, wars)
+fit <- ibm(fat, ~ pre1950 + dem, ~ pre1950 + dem, ~ pre1950 + dem, wars)
+fit$summary
+
 }

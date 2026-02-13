@@ -2,7 +2,7 @@
 % Please edit documentation in R/boot_p.R
 \name{boot_p}
 \alias{boot_p}
-\title{Simulate Pr(X > x) for an inverse Burr model outcome}
+\title{Simulate and do inference for Pr(X > x) at different thresholds}
 \usage{
 boot_p(data, var, thresh, its = 1000, ci = 0.95)
 }
@@ -13,11 +13,26 @@ boot_p(data, var, thresh, its = 1000, ci = 0.95)
 
 \item{thresh}{A numerical threshold for which Pr(X > x) is computed. If missing, an error will be returned.}
 
-\item{its}{The number bootstrap iterations. The default is 1,000.}
+\item{its}{The number of bootstrap iterations. The default is 1,000.}
 
 \item{ci}{A value between 0 and 1 indicating the quantile confidence interval level to be returned. 0.95 is the default.}
 }
+\value{
+A data frame with the following values:
+\describe{
+\item{estimate}{The estimated Pr(X > x).}
+\item{lower}{The lower bound of the bootstrapped confidence interval.}
+\item{upper}{The upper bound of the bootstrapped confidence interval.}
+}
+}
 \description{
-This function allows you to simulate random draws from an
-inverse Burr model fit using the \code{ibm()} function.
+This function allows you to estimate Pr(X > x) for some variable, potentially grouped by any number of factors, and
+perform bootstrapping for statistical inference.
+}
+\examples{
+library(dplyr)
+wars |>
+  group_by(post1950) |>
+  boot_b(fat, thresh = 1e06, ci = .84)
+
 }

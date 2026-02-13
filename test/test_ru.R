@@ -57,7 +57,7 @@ ibm(
 
 ibm_sim(
   model_fit,
-  newdata = data.frame(
+  newdata = tibble(
     pop = mean(wars$pop),
     post1950 = mean(wars$maj),
     dem = c(-5, 0, 5)

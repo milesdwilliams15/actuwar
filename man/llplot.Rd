@@ -9,11 +9,14 @@ llplot(data, x, by, show_fit = FALSE)
 \arguments{
 \item{data}{A data object for the variable you want to plot.}
 
-\item{x}{The variable you want to show Pr(X > x).}
+\item{x}{The variable for which you you want to plot Pr(X > x).}
 
 \item{by}{An optional grouping variable. Should be a character or factor.}
 
 \item{show_fit}{If \code{TRUE} the plot will include an inverse Burr fit for the data. Default is \code{FALSE}.}
+}
+\value{
+A ggplot object showing the relationship between a variable and its empirical Pr(X > x), both on a log-10 scale.
 }
 \description{
 This function allows you to plot a

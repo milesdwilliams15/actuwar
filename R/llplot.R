@@ -4,9 +4,11 @@
 #' log-log plot of Pr(X > x) given x.
 #' 
 #' @param data A data object for the variable you want to plot.
-#' @param x The variable you want to show Pr(X > x).
+#' @param x The variable for which you you want to plot Pr(X > x).
 #' @param by An optional grouping variable. Should be a character or factor.
 #' @param show_fit If `TRUE` the plot will include an inverse Burr fit for the data. Default is `FALSE`.
+#'
+#' @returns A ggplot object showing the relationship between a variable and its empirical Pr(X > x), both on a log-10 scale.
 #'
 #' @examples llplot(wars, fat, show_fit = T)
 #' @export

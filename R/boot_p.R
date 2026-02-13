@@ -1,13 +1,26 @@
-#' Simulate Pr(X > x) for an inverse Burr model outcome
+#' Simulate and do inference for Pr(X > x) at different thresholds
 #' 
-#' This function allows you to simulate random draws from an
-#' inverse Burr model fit using the `ibm()` function.
+#' This function allows you to estimate Pr(X > x) for some variable, potentially grouped by any number of factors, and 
+#' perform bootstrapping for statistical inference.
 #' 
 #' @param data A data object. Can be either grouped or un-grouped.
 #' @param var The variable for which Pr(X > x) will be computed.
 #' @param thresh A numerical threshold for which Pr(X > x) is computed. If missing, an error will be returned.
-#' @param its The number bootstrap iterations. The default is 1,000.
+#' @param its The number of bootstrap iterations. The default is 1,000.
 #' @param ci A value between 0 and 1 indicating the quantile confidence interval level to be returned. 0.95 is the default.
+#' @returns A data frame with the following values:
+#' \describe{
+#'   \item{estimate}{The estimated Pr(X > x).}
+#'   \item{lower}{The lower bound of the bootstrapped confidence interval.}
+#'   \item{upper}{The upper bound of the bootstrapped confidence interval.}
+#' }
+#' 
+#' @examples 
+#' library(dplyr)
+#' wars |>
+#'   group_by(post1950) |>
+#'   boot_b(fat, thresh = 1e06, ci = .84)
+#' 
 #' @export
 boot_p <- function(data, var, thresh, its = 1000, ci = 0.95) {
   
@@ -41,12 +54,8 @@ boot_p <- function(data, var, thresh, its = 1000, ci = 0.95) {
   ## return a summary of bootstrapped Pr(X > x)
   boot_out |>
     dplyr::summarize(
-      boot_mean = mean(prob),
-      boot_median = median(prob),
-      boot_se = sd(prob),
-      boot_lower = quantile(prob, 1 - (ci + (1 - ci) / 2)),
-      boot_upper = quantile(prob, ci + (1 - ci) / 2),
-      sims = its
+      lower = quantile(prob, 1 - (ci + (1 - ci) / 2)),
+      upper = quantile(prob, ci + (1 - ci) / 2),
     ) -> boot_out
   
   if(nrow(obs_out) == 1) {
