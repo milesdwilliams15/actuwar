@@ -11,14 +11,15 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Imports:
-        ggplot2,
         dplyr,
         actuar,
-        stringr,
         tidyr,
-        furrr
+        furrr,
+        purrr,
+        rlang,
+        tibble,
+        stats
 Depends: 
     ggplot2,
-    dplyr,
     R (>= 2.10)
 LazyData: true

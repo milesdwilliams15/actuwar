@@ -29,7 +29,7 @@
 #' }
 #'
 #' @examples
-#' fit <- ibm(fat, ~ pre1950 + dem, ~ pre1950 + dem, ~ pre1950 + dem, wars)
+#' fit <- ibm(fat, ~ post1950 + dem, ~ post1950 + dem, ~ post1950 + dem, wars)
 #' fit$summary
 #'
 #' @export

@@ -26,6 +26,6 @@ with parallel processing.
 }
 \examples{
 fit   <- ibm(fat, ~ post1950 + dem, ~ post1950 + dem, ~ post1950 + dem, wars)
-preds <- ibm_sim(fit, newdata = data.frame(post1950 == "post-1950", dem = .5))
+preds <- ibm_sim(fit, newdata = data.frame(post1950 = "post-1950", dem = .5))
 
 }

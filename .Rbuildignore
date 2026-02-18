@@ -2,3 +2,7 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^data-raw$
+^actuwar\.Rproj$
+^images$
+^make_logo\.R$
+^test$

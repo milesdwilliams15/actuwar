@@ -19,7 +19,7 @@
 #' library(dplyr)
 #' wars |>
 #'   group_by(post1950) |>
-#'   boot_b(fat, thresh = 1e06, ci = .84)
+#'   boot_p(fat, thresh = 1e06, ci = .84)
 #' 
 #' @export
 boot_p <- function(data, var, thresh, its = 1000, ci = 0.95) {
@@ -36,7 +36,7 @@ boot_p <- function(data, var, thresh, its = 1000, ci = 0.95) {
     ) -> data
   data |>
     dplyr::summarize(
-      estimate = mean(x > thresh)
+      estimate = mean(.data$x > thresh)
     ) -> obs_out
   
   ## bootstrap the data and get Pr(X > x)
@@ -45,7 +45,7 @@ boot_p <- function(data, var, thresh, its = 1000, ci = 0.95) {
       ~ data |>
         dplyr::sample_n(nrow(data), T) |>
         dplyr::summarize(
-          prob = mean(x > thresh),
+          prob = mean(.data$x > thresh),
           .groups = "keep"
         ),
       .options = furrr::furrr_options(seed = T)
@@ -54,8 +54,8 @@ boot_p <- function(data, var, thresh, its = 1000, ci = 0.95) {
   ## return a summary of bootstrapped Pr(X > x)
   boot_out |>
     dplyr::summarize(
-      lower = quantile(prob, 1 - (ci + (1 - ci) / 2)),
-      upper = quantile(prob, ci + (1 - ci) / 2),
+      lower = stats::quantile(.data$prob, 1 - (ci + (1 - ci) / 2)),
+      upper = stats::quantile(.data$prob, ci + (1 - ci) / 2),
     ) -> boot_out
   
   if(nrow(obs_out) == 1) {

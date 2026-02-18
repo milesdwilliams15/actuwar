@@ -52,7 +52,7 @@ two shape parameters (\code{alpha}, \code{theta}) may be modeled as
 functions of covariates via log-link parameterization.
 }
 \examples{
-fit <- ibm(fat, ~ pre1950 + dem, ~ pre1950 + dem, ~ pre1950 + dem, wars)
+fit <- ibm(fat, ~ post1950 + dem, ~ post1950 + dem, ~ post1950 + dem, wars)
 fit$summary
 
 }

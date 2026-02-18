@@ -10,7 +10,8 @@
 #'
 #' @returns A ggplot object showing the relationship between a variable and its empirical Pr(X > x), both on a log-10 scale.
 #'
-#' @examples llplot(wars, fat, show_fit = T)
+#' @examples llplot(wars, fat, show_fit = TRUE)
+#' @import ggplot2
 #' @export
 llplot <- function(data, x, by, show_fit = FALSE) {
   if(missing(data)) {
@@ -36,31 +37,27 @@ llplot <- function(data, x, by, show_fit = FALSE) {
     tidyr::drop_na() |>
     dplyr::group_by(by) |>
     dplyr::mutate(
-      p = rank(-x) / max(rank(-x))
-    ) -> ndata
-  
-  if(show_fit) {
-    ndata |>
-      dplyr::group_split(by) |>
-      purrr::map(~ {
-        fit <- ibm(x, data = .x, its = 1, verbose = F)
-        
-        .x |>
-          dplyr::mutate(
-            fit = actuar::pinvburr(
-              q = x,
-              scale = exp(fit$summary$estimate[1]),
-              shape1 = exp(fit$summary$estimate[2]),
-              shape2 = exp(fit$summary$estimate[3]),
-              lower.tail = F
-            )
+      p = rank(-.data$x) / max(rank(-.data$x))
+    ) |>
+    dplyr::group_split(by) |>
+    purrr::map(~ {
+      fit <- ibm(x, data = .x, its = 1, verbose = F)
+      
+      .x |>
+        dplyr::mutate(
+          fit = actuar::pinvburr(
+            q = x,
+            scale = exp(fit$summary$estimate[1]),
+            shape1 = exp(fit$summary$estimate[2]),
+            shape2 = exp(fit$summary$estimate[3]),
+            lower.tail = F
           )
-      }) |>
-      dplyr::bind_rows() -> ndata
-  }
+        )
+    }) |>
+    dplyr::bind_rows() -> ndata
   
   ggplot2::ggplot(ndata) +
-    ggplot2::aes(x = x, y = p, color = by) +
+    ggplot2::aes(x = .data$x, y = .data$p, color = .data$by) +
     ggplot2::geom_point(
       show.legend = !missing(by),
       alpha = .4
@@ -75,7 +72,8 @@ llplot <- function(data, x, by, show_fit = FALSE) {
   if(show_fit) {
     the_plot +
       ggplot2::geom_line(
-        ggplot2::aes(y = fit),
+        data = ndata,
+        ggplot2::aes(x = .data$x, y = .data$fit, color = .data$by),
         show.legend = !missing(by),
         linewidth = .75
       ) -> the_plot

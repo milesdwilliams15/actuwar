@@ -33,6 +33,6 @@ perform bootstrapping for statistical inference.
 library(dplyr)
 wars |>
   group_by(post1950) |>
-  boot_b(fat, thresh = 1e06, ci = .84)
+  boot_p(fat, thresh = 1e06, ci = .84)
 
 }

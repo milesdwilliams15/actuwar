@@ -23,5 +23,5 @@ This function allows you to plot a
 log-log plot of Pr(X > x) given x.
 }
 \examples{
-llplot(wars, fat, show_fit = T)
+llplot(wars, fat, show_fit = TRUE)
 }
