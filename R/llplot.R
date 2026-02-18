@@ -41,7 +41,7 @@ llplot <- function(data, x, by, show_fit = FALSE) {
     ) |>
     dplyr::group_split(by) |>
     purrr::map(~ {
-      fit <- ibm(x, data = .x, its = 1, verbose = F)
+      fit <- suppressMessages(ibm(x, data = .x, its = 1, verbose = F))
       
       .x |>
         dplyr::mutate(
