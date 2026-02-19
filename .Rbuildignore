@@ -6,3 +6,6 @@
 ^images$
 ^make_logo\.R$
 ^test$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

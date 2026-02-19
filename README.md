@@ -1,4 +1,4 @@
-# {actuwar} <img src="inst/logo.png" align="right" width="200"/>
+# {actuwar} <img src="man/figures/logo.png" align="right" width="200"/>
 
 ![R-version](https://img.shields.io/badge/R%20%3E%3D-4.2.1-brightgreen) ![updated](https://img.shields.io/badge/last%20update-02--13--2026-brightgreen) ![version](https://img.shields.io/badge/version-1.0.1-brightgreen) ![license](https://img.shields.io/badge/license-MIT-red) ![encoding](https://img.shields.io/badge/encoding-UTF--8-red) [![orchid](https://img.shields.io/badge/ORCID-0000--0003--0192--5542-brightgreen)](https://orcid.org/0000-0003-0192-5542)
 
@@ -94,7 +94,7 @@ The function `llplot()` is an opinionated wrapper for `ggplot()` that produces a
 llplot(wars, fat)
 ```
 
-![](images/clipboard-782194201.png)
+![](man/figures/clipboard-782194201.png)
 
 `llplot()` will also let you specify that you want to show values by different groups in the data. The below code shows the distribution of war deaths by whether the war started before or after 1950:
 
@@ -102,7 +102,7 @@ llplot(wars, fat)
 llplot(wars, fat, by = post1950)
 ```
 
-![](images/clipboard-2427994267.png)
+![](man/figures/clipboard-2427994267.png)
 
 You can also indicate that you want to show a simple inverse Burr fit for the data (which works with or without grouping) by specifying `show_fit = TRUE`.
 
@@ -110,7 +110,7 @@ You can also indicate that you want to show a simple inverse Burr fit for the da
 llplot(wars, fat, by = post1950, show_fit = T)
 ```
 
-![](images/clipboard-2479606319.png)
+![](man/figures/clipboard-2479606319.png)
 
 ## Simulating conditional distributions
 
@@ -148,7 +148,7 @@ llplot(sim_data, pred, by = dem) +
   )
 ```
 
-![](images/clipboard-1244365390.png)
+![](man/figures/clipboard-1244365390.png)
 
 `ibm_sim()` gives you the option to factor in parameter uncertainty into your simulation as well. You can control this with the `se` option. The default is `FALSE`. Setting to `TRUE` means that model coefficients used for simulations are randomly drawn from the empirical distribution of bootstrapped coefficients saved with the `ibm()` output. While the choice is up to the user, accounting for parameter uncertainty can offer a more representative range of simulated values that are consistent with the data. You can see an example below:
 
@@ -183,7 +183,7 @@ llplot(sim_data, pred, by = dem) +
   )
 ```
 
-![](images/clipboard-425491390.png)
+![](man/figures/clipboard-425491390.png)
 
 ## Inferring Pr(X \> x)
 
@@ -200,7 +200,7 @@ wars |>
   geom_pointrange()
 ```
 
-![](images/clipboard-135343921.png)
+![](man/figures/clipboard-135343921.png)
 
 When giving `boot_p()` data simulated from a model fit, you can use it to show how model covariates condition the risk of wars larger than some magnitude of interest (like the near 16 million battle deaths recorded for WWII). The below results suggest that the chances of such a war are small, but significantly higher for wars involving autocracies, followed by democracies and then anocracies.
 
@@ -213,7 +213,7 @@ sim_data |>
   geom_pointrange()
 ```
 
-![](images/clipboard-2518910634.png)
+![](man/figures/clipboard-2518910634.png)
 
 ## Additional comments
 
